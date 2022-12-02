@@ -2,9 +2,10 @@
 pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "hardhat/console.sol";
 
-contract EtherBank {
+contract EtherBank is ReentrancyGuard {
     using Address for address payable;
 
     // keeps track of all savings account balances
@@ -16,7 +17,7 @@ contract EtherBank {
     }
 
     // withdraw all funds from the user's account
-    function withdraw() external {
+    function withdraw() external nonReentrant {
         require(balances[msg.sender] > 0, "Withdrawl amount exceeds available balance.");
         
         console.log("");
@@ -24,9 +25,8 @@ contract EtherBank {
         console.log("Attacker balance: ", balances[msg.sender]);
         console.log("");
 
-        uint accountBalance = balances[msg.sender];
+        payable(msg.sender).sendValue(balances[msg.sender]);
         balances[msg.sender] = 0;
-        payable(msg.sender).sendValue(accountBalance);
     }
 
     // check the total balance of the EtherBank contract
